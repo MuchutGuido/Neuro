@@ -3,6 +3,7 @@ from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = './neuroImg'
+if not os.path.exists(UPLOAD_FOLDER): os.makedirs(os.path.join(os.getcwd(), UPLOAD_FOLDER))
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 app = Flask(__name__, static_folder = "./dist/static", template_folder = "./dist")
@@ -27,14 +28,30 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            print(filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return render_template("index.html")
+            redi = url_for('upload_file', filename=filename)
+            print(redi)
+            return redirect(redi)
+    return '''
+    <!doctype html>
+    <html>
+        <head>
+            <title>Upload new File</title>
+        </head>
+        <body>
+            <h1>Upload new File</h1>
+            <form method=post enctype=multipart/form-data>
+            <input type=file name=file>
+            <input type=submit value=Upload>
+            </form> 
+        </body>
+    </html>
+    '''
 
 @app.route('/')
 def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8888, host='0.0.0.0')
+    app.run(debug=True, port=8888, host='127.0.0.1')
